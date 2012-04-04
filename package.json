@@ -1,0 +1,20 @@
+{
+  "name": "Favoritize",
+  "version": "0.1.0",
+  "description": "Friendly user review platform, based on easy ratio mechanism.",
+  "homepage": "http://www.favoritize.com",
+  "keywords": ["product", "reviews", "judgment", "critique", "ratio", "rate"],
+  "author": "outaTiME <afalduto@gmail.com> (http://outatime.tumblr.com)",
+  "repository": {
+    "type": "git",
+    "url": "http://github.com/outaTiME/favoritize.git"
+  },
+  "main": "lib/app",
+  "dependencies": {
+    "express": ">=2.5.9"
+  },
+  "engines": {
+    "node": ">=0.6.6"
+  },
+  "private": true
+}
