@@ -1,6 +1,6 @@
 {
   "name": "Favoritize",
-  "version": "0.1.0",
+  "version": "0.1.0-sake",
   "description": "Friendly user review platform, based on easy ratio mechanism.",
   "homepage": "http://www.favoritize.com",
   "keywords": ["product", "reviews", "judgment", "critique", "ratio", "rate"],
