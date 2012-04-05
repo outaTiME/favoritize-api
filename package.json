@@ -1,6 +1,6 @@
 {
   "name": "Favoritize",
-  "version": "0.1.0-sake",
+  "version": "0.1.0",
   "description": "Friendly user review platform, based on easy ratio mechanism.",
   "homepage": "http://www.favoritize.com",
   "keywords": ["product", "reviews", "judgment", "critique", "ratio", "rate"],
@@ -11,6 +11,7 @@
   },
   "main": "lib/app",
   "dependencies": {
+    "restify": ">=1.3.0",
     "express": ">=2.5.9"
   },
   "engines": {
