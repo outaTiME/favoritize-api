@@ -1,24 +1,18 @@
-## Node XML Transformer
+## Favoritize
 
-Yay, im a reeeeeally easy XML transformer for node.
+Yay, im a friendly user review platform, based on easy ratio mechanism.
 
 ## Install
 
 Using npm:
 
 ```
-$ npm install -g xml-transformer
+$ npm install
 ```
 
 ## Basics
 
-After install globally, you must run the following command:
 
-```
-$ xml-transformer -s [ejs template] -o [output file] <xml input file>
-```
-
-then, voilà ... input file now was tranformed using the `ejs` template specified.
 
 ## Features
 
@@ -32,6 +26,4 @@ Coming soon ...
 
 ## License
 
-Copyright 2012 outaTiME.
-
-Licensed under the Apache License, Version 2.0: <http://www.apache.org/licenses/LICENSE-2.0>
+Copyright 2012 outaTiME, Inc.
