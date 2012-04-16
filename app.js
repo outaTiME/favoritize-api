@@ -31,7 +31,7 @@ var
     */
     var authz = req.authorization;
     // log.info('Authorization: %j', authz);
-    if (authz.scheme !== 'Basic' || authz.basic.username !== 'root' || authz.basic.password !== 'secret') {
+    if (authz.scheme !== 'Basic' || authz.basic.username !== 'admin' || authz.basic.password !== 'c%}YW34^86>7,xJ') {
       return next(new restify.NotAuthorizedError('Failed to authenticate user'));
     }
     return next();
@@ -162,19 +162,22 @@ var
   ping = function (req, res, next) {
     res.send("Ok");
     return next();
-  },
+  }/*,
   hello = function (req, res, next) {
     res.send('hello ' + req.params.name);
     return next();
-  };
+  }*/;
 
 server.get('/', authenticate, ping);
 server.head('/', authenticate, ping);
 
+/*
 server.get('/hello/:name', authenticate, hello);
 server.head('/hello/:name', authenticate, hello);
+*/
 
-server.get('/users', function(req, res, next) {
+/*
+server.get('/users', authenticate, function(req, res, next) {
   UserModel.find({}, ['email'], function (err, docs) {
     if (err) {
       return next(err);
@@ -185,6 +188,7 @@ server.get('/users', function(req, res, next) {
     return next();
   });
 });
+*/
 
 server.post('/users', function (req, res, next) {
   var user = new UserModel({
