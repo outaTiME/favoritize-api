@@ -12,7 +12,9 @@
   "main": "lib/app",
   "dependencies": {
     "restify": ">=1.3.0",
-    "bunyan": ">=0.6.8"
+    // "bunyan": ">=0.6.8",
+    "mongoose": ">=2.5.14",
+    "crypto": ">=0.0.3"
   },
   "engines": {
     "node": ">=0.6.6"
