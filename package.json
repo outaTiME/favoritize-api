@@ -9,11 +9,11 @@
     "type": "git",
     "url": "http://github.com/outaTiME/favoritize-api.git"
   },
-  "main": "lib/app",
+  "main": "app",
   "dependencies": {
-    "restify": ">=1.3.0",
-    "mongoose": ">=2.5.14",
-    "crypto": ">=0.0.3"
+    "restify": "1.x",
+    "mongoose": "2.x",
+    "crypto": "0.x"
   },
   "engines": {
     "node": ">=0.6.6"
