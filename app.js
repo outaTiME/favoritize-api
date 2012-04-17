@@ -16,38 +16,52 @@ var
 
   // helpers
 
-  authenticate = function (req, res, next) {
-    /*
+  /** Create random md5 hash. */
+  createRandomHash = function () {
+    return crypto.createHash('md5').update(
+      Math.round((new Date().valueOf() * Math.random())) + '').digest('hex');
+  },
 
-    myPretendDatabaseClient.lookup(req.username, function (err, user) {
-        if (err) return next(err);
-
-        if (user.password !== req.authorization.basic.password)
-            return next(new restify.NotAuthorizedError());
-
-        return next();
-    });
-
-    */
-    var authz = req.authorization;
-    // log.info('Authorization: %j', authz);
-    if (authz.scheme !== 'Basic' || authz.basic.username !== 'admin' || authz.basic.password !== 'c%}YW34^86>7,xJ') {
-      return next(new restify.NotAuthorizedError('Failed to authenticate user'));
+  /** Check auth method, used in each restify request. */
+  checkAuth = function (req, res, next) {
+    var authorization = req.authorization, invalidCredentials = new restify.InvalidCredentialsError(
+      'User authentication failed due to invalid authentication values.');
+    console.log("Check authorization request: %j", authorization);
+    if (authorization.scheme === "Basic") {
+      UserModel.findOne({ email: authorization.basic.username }, function(err, user) {
+        if (err) {
+          return next(err);
+        }
+        if (user && user.authenticate(authorization.basic.password)) {
+          // yay, valid user
+          return next();
+        }
+        return next(invalidCredentials);
+      });
+    } else {
+      // bad schema
+      return next(invalidCredentials);
     }
-    return next();
+  },
+
+  /** Check if app running in development mode, only for especial methods. */
+  checkDevelopmentMode = function (req, res, next) {
+    if (process.env['NODE_ENV'] !== "production") {
+      // yay, valid execution
+      return next();
+    }
+    return next(new restify.NotAuthorizedError("Forbidden method execution."));
   };
 
 // database
 
-mongoose.connect('mongodb://localhost/favoritize');
+mongoose.connect(process.env['MONGOHQ_URL'] || 'mongodb://localhost/favoritize');
+
+// mongoose.connect("mongodb://heroku:005bb51403ad4b4d844629ec159bbc10@staff.mongohq.com:10083/app3943745");
 
 var Schema = mongoose.Schema; //Schema.ObjectId
 
 // Schemas
-
-var User = new Schema({
-
-});
 
 var Images = new Schema({
   kind: {
@@ -134,9 +148,19 @@ User.method('encryptPassword', function(password) {
 
 User.pre('save', function(next) {
   if (!validatePresenceOf(this.password)) {
-    next(new Error('Invalid password'));
+    next(new Error('Invalid password.'));
   } else {
     next();
+  }
+});
+
+var Invitation = new Schema({
+  code: {
+    type: String,
+    required: true
+  },
+  available: {
+    type: Boolean
   }
 });
 
@@ -144,7 +168,8 @@ User.pre('save', function(next) {
 
 var
   ProductModel = mongoose.model('Product', Product),
-  UserModel =  mongoose.model('User', User);
+  UserModel =  mongoose.model('User', User),
+  InvitationModel =  mongoose.model('Invitation', Invitation);
 
 // middlewares
 
@@ -168,16 +193,15 @@ var
     return next();
   }*/;
 
-server.get('/', authenticate, ping);
-server.head('/', authenticate, ping);
+server.get('/', checkAuth, ping);
+server.head('/', checkAuth, ping);
 
 /*
-server.get('/hello/:name', authenticate, hello);
-server.head('/hello/:name', authenticate, hello);
+server.get('/hello/:name', checkAuth, hello);
+server.head('/hello/:name', checkAuth, hello);
 */
 
-/*
-server.get('/users', authenticate, function(req, res, next) {
+server.get('/users', checkDevelopmentMode, function(req, res, next) {
   UserModel.find({}, ['email'], function (err, docs) {
     if (err) {
       return next(err);
@@ -188,18 +212,71 @@ server.get('/users', authenticate, function(req, res, next) {
     return next();
   });
 });
-*/
 
 server.post('/users', function (req, res, next) {
-  var user = new UserModel({
-    email: req.params.email,
-    password: req.params.password
+  // check valid invitation code
+  InvitationModel.findOne({ code: req.params.invitation_code }, function(err, invitation) {
+    if (err) {
+      return next(err);
+    }
+    if (invitation) {
+      // FIXME: [outaTiME] check user existence and mark invitation has used
+      var user = new UserModel({
+        email: req.params.email,
+        password: req.params.password
+      });
+      user.save(function (err) {
+        if (err) {
+          return next(err);
+        }
+        res.send(user);
+        return next();
+      });
+    } else {
+      return next(new restify.InvalidArgumentError("Unable to find the invitation code provided."));
+    }
+  });
+});
+
+server.get('/codes', checkDevelopmentMode, function(req, res, next) {
+  InvitationModel.find({}, ['code'], function (err, docs) {
+    if (err) {
+      return next(err);
+    }
+    res.send(docs.map(function(d) {
+      return { id: d._id, code: d.code };
+    }));
+    return next();
+  });
+});
+
+// fixtures
+
+server.get('/fixtures/user', checkDevelopmentMode, function (req, res, next) {
+  var password = createRandomHash(), user = new UserModel({
+    email: "afalduto@gmail.com",
+    password: password
   });
   user.save(function (err) {
     if (err) {
       return next(err);
     }
+    console.log("Created password for user was: %s", password);
     res.send(user);
+    return next();
+  });
+});
+
+server.get('/fixtures/invitation', checkDevelopmentMode, function (req, res, next) {
+  var code = createRandomHash(), invitation = new InvitationModel({
+    code: code
+  });
+  invitation.save(function (err) {
+    if (err) {
+      return next(err);
+    }
+    console.log("New invitation code: %s", code);
+    res.send(invitation);
     return next();
   });
 });
