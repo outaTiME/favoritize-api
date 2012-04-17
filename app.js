@@ -33,7 +33,8 @@ var
           return next(err);
         }
         if (user && user.authenticate(authorization.basic.password)) {
-          // yay, valid user
+          // yay, valid user store at request
+          req.user = { id: user._id, email: user.email };
           return next();
         }
         return next(invalidCredentials);
@@ -185,8 +186,9 @@ server.use(restify.throttle({burst: 100, rate: 50, ip: true, overrides: {}}));
 // routes
 
 var
-  ping = function (req, res, next) {
-    res.send("Ok");
+  hi = function (req, res, next) {
+    // took user form request and deliver
+    res.send(req.user);
     return next();
   }/*,
   hello = function (req, res, next) {
@@ -194,8 +196,8 @@ var
     return next();
   }*/;
 
-server.get('/', checkAuth, ping);
-server.head('/', checkAuth, ping);
+server.get('/hi', checkAuth, hi);
+server.head('/hi', checkAuth, hi); // check valid user without output
 
 /*
 server.get('/hello/:name', checkAuth, hello);
