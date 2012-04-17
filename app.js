@@ -25,7 +25,7 @@ var
   /** Check auth method, used in each restify request. */
   checkAuth = function (req, res, next) {
     var authorization = req.authorization, invalidCredentials = new restify.InvalidCredentialsError(
-      'User authentication failed due to invalid authentication values.');
+      'User authentication failed due to invalid authentication values');
     console.log("Check authorization request: %j", authorization);
     if (authorization.scheme === "Basic") {
       UserModel.findOne({ email: authorization.basic.username }, function(err, user) {
@@ -50,7 +50,8 @@ var
       // yay, valid execution
       return next();
     }
-    return next(new restify.NotAuthorizedError("Forbidden method execution."));
+    // resource not found simulation ^^
+    return next(new restify.ResourceNotFoundError(req.url + ' not found'));
   };
 
 // database
@@ -148,7 +149,7 @@ User.method('encryptPassword', function(password) {
 
 User.pre('save', function(next) {
   if (!validatePresenceOf(this.password)) {
-    next(new Error('Invalid password.'));
+    next(new Error('Invalid password'));
   } else {
     next();
   }
@@ -233,7 +234,7 @@ server.post('/users', function (req, res, next) {
         return next();
       });
     } else {
-      return next(new restify.InvalidArgumentError("Unable to find the invitation code provided."));
+      return next(new restify.InvalidArgumentError("Unable to find the invitation code provided"));
     }
   });
 });
