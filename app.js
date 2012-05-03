@@ -4,6 +4,7 @@ var
   mongoose = require('mongoose'),
   crypto = require('crypto'),
   troop = require('mongoose-troop'),
+  mongooseTypes = require("mongoose-types"),
 
   /** Yay, out application name. */
   app_name = "Favoritize",
@@ -65,6 +66,14 @@ var
     return next(new restify.ResourceNotFoundError(req.url + ' not found'));
   };
 
+// load types
+
+mongooseTypes.loadTypes(mongoose);
+
+var
+  Email = mongoose.SchemaTypes.Email /*,
+  useTimestamps = mongooseTypes.useTimestamps */;
+
 // database
 
 mongoose.connect(process.env['MONGOHQ_URL'] || 'mongodb://localhost/favoritize');
@@ -117,31 +126,20 @@ Product.plugin(troop.keywords, {
 });
 Product.plugin(troop.timestamp);
 
-/*
-function validatePresenceOf(value) {
-  return value && value.length;
-}
-*/
-
-function toLower (v) {
-  return v.toLowerCase();
-}
-
 var User = new Schema({
   email: {
-    type: String,
+    type: Email,
     index: {
       unique: true
     },
-    required: true,
-    set: toLower
+    required: true
   }
 });
 
 User.plugin(troop.basicAuth, {
   loginPath: "email"
 });
-User.plugin(troop.timestamp)
+User.plugin(troop.timestamp);
 
 // FIXME: [outaTiME] must be send an email to client
 
@@ -194,7 +192,7 @@ var Invitation = new Schema({
   }
 });
 
-Invitation.plugin(troop.timestamp)
+Invitation.plugin(troop.timestamp);
 
 // models
 
