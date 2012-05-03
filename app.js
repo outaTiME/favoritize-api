@@ -3,6 +3,7 @@ var
   restify = require('restify'),
   mongoose = require('mongoose'),
   crypto = require('crypto'),
+  troop = require('mongoose-troop'),
 
   /** Yay, out application name. */
   app_name = "Favoritize",
@@ -32,12 +33,21 @@ var
         if (err) {
           return next(err);
         }
-        if (user && user.authenticate(authorization.basic.password)) {
-          // yay, valid user store at request
-          req.user = { id: user._id, email: user.email };
-          return next();
+        if (user) {
+          user.authenticate(authorization.basic.password, function (erro, auth) {
+            if (erro) {
+              return next(erro);
+            }
+            if (auth === true) {
+              // yay, valid user store at request
+              req.user = { email: user.email };
+              return next();
+            }
+            return next(invalidCredentials);
+          });
+        } else {
+          return next(invalidCredentials);
         }
-        return next(invalidCredentials);
       });
     } else {
       // bad schema
@@ -77,9 +87,13 @@ var Images = new Schema({
   }
 });
 
+Images.plugin(troop.timestamp);
+
 var Categories = new Schema({
   name: String
 });
+
+Categories.plugin(troop.timestamp);
 
 var Product = new Schema({
   title: {
@@ -95,34 +109,43 @@ var Product = new Schema({
     unique: true
   },
   images: [Images],
-  categories: [Categories],
-  modified: {
-    type: Date,
-    "default": Date.now
-  }
+  categories: [Categories]
 });
 
+Product.plugin(troop.keywords, {
+  source: ['title', 'description']
+});
+Product.plugin(troop.timestamp);
+
+/*
 function validatePresenceOf(value) {
   return value && value.length;
 }
+*/
 
 function toLower (v) {
   return v.toLowerCase();
 }
 
 var User = new Schema({
-  'email': {
+  email: {
     type: String,
-    validate: [validatePresenceOf, 'an email is required'],
     index: {
       unique: true
     },
+    required: true,
     set: toLower
-  },
-  'hashed_password': String,
-  'salt': String
+  }
 });
 
+User.plugin(troop.basicAuth, {
+  loginPath: "email"
+});
+User.plugin(troop.timestamp)
+
+// FIXME: [outaTiME] must be send an email to client
+
+/*
 User.virtual('id')
   .get(function() {
     return this._id.toHexString();
@@ -156,15 +179,22 @@ User.pre('save', function(next) {
   }
 });
 
+*/
+
 var Invitation = new Schema({
   code: {
     type: String,
+    index: {
+      unique: true
+    },
     required: true
   },
   available: {
     type: Boolean
   }
 });
+
+Invitation.plugin(troop.timestamp)
 
 // models
 
@@ -255,12 +285,12 @@ server.get('/codes', checkDevelopmentMode, function(req, res, next) {
 
 // fixtures
 
-server.get('/fixtures/user', checkDevelopmentMode, function (req, res, next) {
-  var password = createRandomHash(), user = new UserModel({
-    email: "afalduto@gmail.com",
+server.get('/fixtures/user/:name', checkDevelopmentMode, function (req, res, next) {
+  var password = createRandomHash();
+  UserModel.register({
+    email: req.params.name + "@gmail.com",
     password: password
-  });
-  user.save(function (err) {
+  }, function (err, user) {
     if (err) {
       return next(err);
     }

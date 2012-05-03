@@ -13,7 +13,8 @@
   "dependencies": {
     "restify": "1.x",
     "mongoose": "2.x",
-    "crypto": "0.x"
+    "crypto": "0.x",
+    "mongoose-troop": "0.0.6"
   },
   "engines": {
     "node": ">=0.6.14"
