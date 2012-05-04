@@ -5,9 +5,28 @@ var
   crypto = require('crypto'),
   troop = require('mongoose-troop'),
   mongooseTypes = require("mongoose-types"),
+  path = require('path'),
+  fs = require('fs'),
+  hogan = require('hogan.js'),
+  util = require('util'),
+  mailer = require('mailer'),
 
   /** Yay, out application name. */
   app_name = "Favoritize",
+
+  /** Default email sender. **/
+  email_sender = "hello@favoritize.com",
+
+  /** Mailer defaults. **/
+  mailer_ops = {
+    host: 'smtp.sendgrid.net',
+    port: '587',
+    authentication: 'plain',
+    username: process.env.SENDGRID_USERNAME,
+    password: process.env.SENDGRID_PASSWORD,
+    domain: 'heroku.com',
+    from: email_sender
+  },
 
   // server
 
@@ -56,14 +75,70 @@ var
     }
   },
 
+  /** Check running environment. **/
+  isProduction = function () {
+    return process.env['NODE_ENV'] === "production";
+  }
+
   /** Check if app running in development mode, only for especial methods. */
   checkDevelopmentMode = function (req, res, next) {
-    if (process.env['NODE_ENV'] !== "production") {
+    if (!isProduction()) {
       // yay, valid execution
       return next();
     }
     // resource not found simulation ^^
     return next(new restify.ResourceNotFoundError(req.url + ' not found'));
+  },
+
+  // email helper
+
+  MailSender = {
+
+    /** Send basic email. **/
+    send: function(template, mailOptions, templateOptions) {
+      fs.readFile(path.join(__dirname, 'mails', template), "utf-8", function (err, text) {
+        if (!err) {
+          // add the rendered Jade template to the mailOptions
+          mailOptions.body = hogan.compile(text).render(templateOptions);
+          // merge the app's mail options
+          var keys = Object.keys(mailer_ops), k;
+          for (var i = 0, len = keys.length; i < len; i++) {
+            k = keys[i];
+            if (!mailOptions.hasOwnProperty(k)) {
+              mailOptions[k] = mailer_ops[k]
+            }
+          }
+          if (isProduction()) { // only send mails in production
+            console.log('Sending email. Trace: %j', mailOptions);
+            mailer.send(mailOptions, function(err, result) {
+              if (err) {
+                console.log(err);
+              }
+            });
+          } else {
+            console.log('Email not send, running en development mode. Trace: %j', mailOptions);
+          }
+        } else {
+          console.log(err);
+        }
+      });
+    },
+
+    /** Send welcome mail. **/
+    sendWelcome: function(user) {
+      this.send(
+        'welcome.hogan',
+        {
+          to: user.email,
+          subject: 'Welcome to ' + app_name + '!'
+        },
+        {
+          user: user,
+          app_name: app_name
+        }
+      );
+    }
+
   };
 
 // load types
@@ -260,6 +335,7 @@ server.post('/users', function (req, res, next) {
         if (err) {
           return next(err);
         }
+        MailSender.sendWelcome(user);
         res.send(user);
         return next();
       });

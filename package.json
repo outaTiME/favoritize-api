@@ -15,7 +15,9 @@
     "mongoose": "2.x",
     "crypto": "0.x",
     "mongoose-troop": "0.0.6",
-    "mongoose-types": "1.0.3"
+    "mongoose-types": "1.0.3",
+    "mailer": "0.x",
+    "hogan.js": "2.x"
   },
   "engines": {
     "node": ">=0.6.14"
