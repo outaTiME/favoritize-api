@@ -10,6 +10,7 @@ var
   hogan = require('hogan.js'),
   util = require('util'),
   mailer = require('mailer'),
+  module = require('package'),
 
   /** Yay, out application name. */
   app_name = "Favoritize",

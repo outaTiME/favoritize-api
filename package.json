@@ -10,6 +10,9 @@
     "url": "http://github.com/outaTiME/favoritize-api.git"
   },
   "main": "app",
+  "scripts": {
+    "test": "mocha test/*.js"
+  },
   "dependencies": {
     "restify": "1.x",
     "mongoose": "2.x",
@@ -19,6 +22,10 @@
     "mailer": "0.x",
     "hogan.js": "2.x"
   },
+  "devDependencies": {
+   "mocha": "",
+   "should": ""
+ },
   "engines": {
     "node": ">=0.6.14"
   },
