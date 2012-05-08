@@ -1,5 +1,5 @@
 
-// test/main.js
+// test/app.js
 var
 
   should = require('should');
