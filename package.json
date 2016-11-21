@@ -14,13 +14,13 @@
     "test": "mocha test/*.js"
   },
   "dependencies": {
-    "restify": "1.x",
-    "mongoose": "2.x",
+    "restify": "^4.3.0",
+    "mongoose": "^4.6.8",
     "crypto": "0.x",
-    "mongoose-troop": "0.0.6",
+    "mongoose-troop": "0.0.8",
     "mongoose-types": "1.0.3",
     "mailer": "0.x",
-    "hogan.js": "2.x",
+    "hogan.js": "^3.0.2",
     "package" : "1.x"
   },
   "devDependencies": {
